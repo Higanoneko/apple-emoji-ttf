@@ -40,7 +40,12 @@ def _small_glyph_metrics(
     origin_x: int = 0,
     origin_y: int = 0,
 ) -> bytes:
-    if y_bearing == "full_height":
+    # sbix originOffsetX/Y 和 CBDT horiBearingX/Y 语义相同：
+    # 都是从 baseline 到 bitmap 顶部/左边缘的像素距离
+    # 当 Apple 设置了非零偏移时直接使用，否则用公式回退
+    if origin_y != 0:
+        bearing_y = max(-128, min(127, origin_y))
+    elif y_bearing == "full_height":
         bearing_y = min(height, 127)
     elif y_bearing == "line_center":
         ascender, descender, _width_max = _sbit_line_metric_values(ppem, font, width)
@@ -49,7 +54,6 @@ def _small_glyph_metrics(
         bearing_y = min(_div_round(height * 3, 4), 127)
     else:
         bearing_y = min(_div_round(height * 5, 6), 127)
-    bearing_y = max(-128, min(127, bearing_y + origin_y))
     bearing_x = max(-128, min(127, origin_x))
     advance = max(width, ppem)
     return struct.pack(">BBbbB", height, width, bearing_x, bearing_y, advance)
