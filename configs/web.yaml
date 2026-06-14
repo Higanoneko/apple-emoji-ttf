@@ -11,6 +11,8 @@ bitmap:
     compress: true
     max_colors: 128
     prefer_pngquant: true
+  metrics:
+    y_bearing: three_quarters_height
 tables:
   drop:
     source_tables: true

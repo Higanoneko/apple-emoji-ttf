@@ -45,6 +45,8 @@ def _small_glyph_metrics(
     elif y_bearing == "line_center":
         ascender, descender, _width_max = _sbit_line_metric_values(ppem, font, width)
         bearing_y = min(_div_round(ascender + descender + height, 2), 127)
+    elif y_bearing == "three_quarters_height":
+        bearing_y = min(_div_round(height * 3, 4), 127)
     else:
         bearing_y = min(_div_round(height * 5, 6), 127)
     bearing_y = max(-128, min(127, bearing_y + origin_y))

@@ -186,7 +186,7 @@ def _parse_bitmap_metrics(raw: Any) -> BitmapMetricsConfig:
         data.get("y_bearing"),
         "bitmap.metrics.y_bearing",
     )
-    if y_bearing not in {None, "five_sixths_height", "full_height", "line_center"}:
+    if y_bearing not in {None, "five_sixths_height", "full_height", "line_center", "three_quarters_height"}:
         raise ConfigError("bitmap.metrics.y_bearing is invalid")
     line_source = optional_nonempty_str(
         data.get("line_source"),
