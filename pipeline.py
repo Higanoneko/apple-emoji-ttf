@@ -54,7 +54,7 @@ def build(request: BuildRequest) -> list[Path]:
         [
             (
                 strike.ppem,
-                [(glyph.gid, glyph.name, glyph.png) for glyph in strike.glyphs],
+                [(glyph.gid, glyph.name, glyph.png, glyph.origin_x, glyph.origin_y) for glyph in strike.glyphs],
             )
             for strike in strikes
         ],
@@ -205,7 +205,7 @@ def _write_split_font(
     font.save(buf)
     chunks = split_web_font(
         buf.getvalue(),
-        [(glyph.gid, glyph.name, glyph.png) for glyph in primary_strike.glyphs],
+        [(glyph.gid, glyph.name, glyph.png, glyph.origin_x, glyph.origin_y) for glyph in primary_strike.glyphs],
         request.output_path,
         ppem=primary_strike.ppem,
         font_metrics=metrics,

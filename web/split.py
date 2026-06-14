@@ -120,7 +120,7 @@ def _active_for_codepoint(
 
 def split_web_font(
     font_bytes: bytes,
-    glyphs: list[tuple[int, str, bytes]],
+    glyphs: list[tuple[int, str, bytes]] | list[tuple[int, str, bytes, int, int]],
     output_path: Path,
     ppem: int,
     font_metrics: FontMetrics,
@@ -143,7 +143,7 @@ def split_web_font(
     if not base_cps:
         return []
 
-    glyph_sizes: dict[str, int] = {name: len(png) for _gid, name, png in glyphs}
+    glyph_sizes: dict[str, int] = {g[1]: len(g[2]) for g in glyphs}
     avg_size = sum(glyph_sizes.values()) / max(len(glyph_sizes), 1)
 
     shared_active: set[str] = set()
@@ -234,7 +234,7 @@ def split_web_font(
                 n_results += 1
 
         chunk_glyphs = [
-            (gid, name, png) for gid, name, png in glyphs if name in active
+            g for g in glyphs if g[1] in active
         ]
         if not chunk_glyphs:
             continue

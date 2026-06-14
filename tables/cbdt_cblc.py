@@ -16,7 +16,7 @@ class FontMetrics:
     descent: int
 
 
-GlyphBitmap = tuple[int, str, bytes]
+GlyphBitmap = tuple[int, str, bytes] | tuple[int, str, bytes, int, int]
 GlyphLocation = tuple[int, int, int]
 
 
@@ -37,6 +37,8 @@ def _small_glyph_metrics(
     ppem: int,
     font: FontMetrics,
     y_bearing: str = "five_sixths_height",
+    origin_x: int = 0,
+    origin_y: int = 0,
 ) -> bytes:
     if y_bearing == "full_height":
         bearing_y = min(height, 127)
@@ -45,8 +47,10 @@ def _small_glyph_metrics(
         bearing_y = min(_div_round(ascender + descender + height, 2), 127)
     else:
         bearing_y = min(_div_round(height * 5, 6), 127)
-    advance = width
-    return struct.pack(">BBbbB", height, width, 0, bearing_y, advance)
+    bearing_y = max(-128, min(127, bearing_y + origin_y))
+    bearing_x = max(-128, min(127, origin_x))
+    advance = max(width, ppem)
+    return struct.pack(">BBbbB", height, width, bearing_x, bearing_y, advance)
 
 
 def build_cbdt(
@@ -77,14 +81,22 @@ def build_cbdt_strikes(
         locations: list[GlyphLocation] = []
         filtered_glyphs: list[GlyphBitmap] = []
 
-        for gid, name, png_data in glyphs:
+        for entry in glyphs:
+            if len(entry) == 5:
+                gid, name, png_data, origin_x, origin_y = entry
+            else:
+                gid, name, png_data = entry
+                origin_x, origin_y = 0, 0
             png_data = filter_png_chunks(png_data)
             size = get_png_size(png_data)
             if size is None:
                 raise ValueError(f"Invalid PNG for glyph id {gid}")
             width, height = size
 
-            metrics = _small_glyph_metrics(width, height, ppem, font_metrics, y_bearing)
+            metrics = _small_glyph_metrics(
+                width, height, ppem, font_metrics, y_bearing,
+                origin_x=origin_x, origin_y=origin_y,
+            )
             offset = len(out)
             out += metrics
             out += struct.pack(">I", len(png_data))
